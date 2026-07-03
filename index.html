@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Data Table App</title>
 </head>
+
 <body>
+
 <main id="app" class="container">
     <!-- Table content will be inserted here -->
 </main>
 
-<!-- Search bar template -->
+<!-- SEARCH -->
 <template id="search">
     <div class="search-bar">
         <label class="search-wrapper" data-name="searchField">
@@ -25,123 +27,117 @@
     </div>
 </template>
 
+<!-- HEADER -->
 <template id="header">
     <div class="table-row header-row" role="rowgroup">
         <div class="table-column" role="columnheader">
             <div class="sortable">
                 Date
-                <button type="submit" name="sort" data-field="date" data-value="none" class="icon" data-name="sortByDate" aria-label="Sort by date"></button>
+                <button type="submit" name="sort" data-field="date" data-value="none" class="icon" data-name="sortByDate"></button>
             </div>
         </div>
+
         <div class="table-column" role="columnheader">
             Customer
         </div>
-        <div class="table-column" role="columnheader">Seller</div>
+
+        <div class="table-column" role="columnheader">
+            Seller
+        </div>
+
         <div class="table-column" role="columnheader">
             <div class="sortable">
                 Total
-                <button type="submit" name="sort" data-field="total" data-value="none" class="icon" data-name="sortByTotal" aria-label="Sort by total"></button>
+                <button type="submit" name="sort" data-field="total" data-value="none" class="icon" data-name="sortByTotal"></button>
             </div>
         </div>
     </div>
 </template>
 
+<!-- FILTER -->
 <template id="filter">
-    <div class="table-row filter-row" data-name="filter" role="rowgroup">
+    <div class="table-row filter-row" data-name="filter">
         <div class="table-column">
-            <label class="filter-wrapper">
-                <input type="text" value="" class="input" placeholder="Search" name="date" data-name="searchByDate">
-                <button type="submit" name="clear" data-field="date" class="icon" aria-label="Filter by date"></button>
+            <label>
+                <input type="text" name="date" data-name="searchByDate" placeholder="Search">
+                <button type="submit" name="clear" data-field="date"></button>
             </label>
         </div>
+
         <div class="table-column">
-            <label class="filter-wrapper">
-                <input type="text" value="" class="input" name="customer" placeholder="Search" data-name="searchByCustomer">
-                <button type="submit" name="clear" data-field="customer" class="icon" aria-label="Filter by customer"></button>
+            <label>
+                <input type="text" name="customer" data-name="searchByCustomer" placeholder="Search">
+                <button type="submit" name="clear" data-field="customer"></button>
             </label>
         </div>
+
         <div class="table-column">
-            <label class="dropdown-select">
-                <select name="seller" data-name="searchBySeller" aria-label="Filter by seller">
-                    <option value="" selected>—</option>
-                </select>
-            </label>
+            <select name="seller" data-name="searchBySeller">
+                <option value="">—</option>
+            </select>
         </div>
+
         <div class="table-column">
-            <div class="range-inputs">
-                <input type="text" class="input" placeholder="from" name="totalFrom" data-name="totalFrom"
-                       aria-label="Experience from">
-                <input type="text" class="input" placeholder="to" name="totalTo" data-name="totalTo"
-                       aria-label="Experience to">
-            </div>
+            <input type="text" name="totalFrom" data-name="totalFrom" placeholder="from">
+            <input type="text" name="totalTo" data-name="totalTo" placeholder="to">
         </div>
     </div>
 </template>
 
-<!-- Table template -->
+<!-- TABLE -->
 <template id="table">
-    <form name="table" class="table" style="--columns: 1fr 1fr 1fr 1fr" role="table" aria-label="Data table">
-        <!-- Header row -->
-        <!-- Filter row -->
-        <!-- Table content -->
-        <div class="table-content" data-name="rows" role="rowgroup">
-            <!-- Rows will be inserted here -->
-        </div>
+    <form name="table" class="table">
+        <div class="table-content" data-name="rows"></div>
     </form>
 </template>
 
-<!-- Pagination template -->
+<!-- PAGINATION -->
 <template id="pagination">
     <div class="pagination-container">
         <div class="pagination-controls">
-            <button type="submit" name="first" class="pagination-button" data-name="firstPage" aria-label="First page">
-                <i class="icon chevrons-left" aria-hidden="true"></i>
-            </button>
-            <button type="submit" name="prev" class="pagination-button" data-name="previousPage" aria-label="Previous page">
-                <i class="icon left" aria-hidden="true"></i>
-            </button>
-            <div class="pagination-pages" data-name="pages" role="group" aria-label="Page navigation">
-                <!-- Page buttons will be generated dynamically -->
-                <label class="pagination-button" aria-label="Goto page 1">
+
+            <button type="submit" name="first" data-name="firstPage">«</button>
+            <button type="submit" name="prev" data-name="previousPage">‹</button>
+
+            <div class="pagination-pages" data-name="pages">
+                <label>
                     <input type="radio" name="page" value="1">
                     <span>1</span>
                 </label>
             </div>
-            <button type="submit" name="next" class="pagination-button" data-name="nextPage" aria-label="Next page">
-                <i class="icon right" aria-hidden="true"></i>
-            </button>
-            <button type="submit" name="last" class="pagination-button" data-name="lastPage" aria-label="Last page">
-                <i class="icon chevrons-right" aria-hidden="true"></i>
-            </button>
+
+            <button type="submit" name="next" data-name="nextPage">›</button>
+            <button type="submit" name="last" data-name="lastPage">»</button>
+
         </div>
+
         <div class="pagination-settings">
-            <div class="pagination-status">
-                Showing <span data-name="fromRow">1</span>
-                to <span data-name="toRow">10</span>
-                of <span data-name="totalRows">200</span> entries
-            </div>
-            <label class="dropdown-select rows-per-page">
-                <select name="rowsPerPage" data-name="rowsPerPage" aria-label="Rows per page">
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
-            </label>
+            <span data-name="fromRow"></span>
+            <span data-name="toRow"></span>
+            <span data-name="totalRows"></span>
+
+            <select name="rowsPerPage" data-name="rowsPerPage">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
         </div>
     </div>
 </template>
 
-<!-- Row template -->
+<!-- ROW -->
 <template id="row">
-    <div class="table-row" role="row">
-        <div class="table-column" data-name="date" role="cell"></div>
-        <div class="table-column" data-name="customer" role="cell"></div>
-        <div class="table-column" data-name="seller" role="cell"></div>
-        <div class="table-column" data-name="total" role="cell"></div>
+    <div class="table-row">
+        <div data-name="date"></div>
+        <div data-name="customer"></div>
+        <div data-name="seller"></div>
+        <div data-name="total"></div>
     </div>
 </template>
 
+<!-- ENTRY POINT (ВАЖНО) -->
 <script type="module" src="/src/main.js"></script>
+
 </body>
 </html>
