@@ -26,7 +26,10 @@ export function initSorting(columns) {
                     order = column.dataset.value;
                 }
             });
+        }
 
+        if (!field || !order || order === 'none') {
+            return data;
         }
 
         return sortCollection(data, field, order);

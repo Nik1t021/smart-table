@@ -17,13 +17,10 @@ const { data, ...indexes } = initData(sourceData);
 function collectState() {
     const state = processFormData(new FormData(sampleTable.container));
 
-    const rowsPerPage = parseInt(state.rowsPerPage);
-    const page = parseInt(state.page ?? 1);
-
     return {
         ...state,
-        rowsPerPage,
-        page
+        rowsPerPage: parseInt(state.rowsPerPage ?? 10),
+        page: parseInt(state.page ?? 1) || 1
     };
 }
 
@@ -46,13 +43,16 @@ const sampleTable = initTable({
     after: ['pagination']
 }, render);
 
+// SEARCH
 const applySearching = initSearching('search');
 
+// SORTING
 const applySorting = initSorting([
     sampleTable.header.elements.sortByDate,
     sampleTable.header.elements.sortByTotal
 ]);
 
+// FILTERING
 const applyFiltering = initFiltering(
     sampleTable.filter.elements,
     {
@@ -60,6 +60,7 @@ const applyFiltering = initFiltering(
     }
 );
 
+// PAGINATION
 const applyPagination = initPagination(
     sampleTable.pagination.elements,
     (el, page, isCurrent) => {

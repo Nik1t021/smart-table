@@ -8,7 +8,7 @@ export const initPagination = ({ pages, fromRow, toRow, totalRows }, createPage)
     return (data, state, action) => {
 
         const rowsPerPage = state.rowsPerPage;
-        const pageCount = Math.ceil(data.length / rowsPerPage);
+        const pageCount = Math.max(1, Math.ceil(data.length / rowsPerPage));
         let page = state.page;
 
         if (action) {

@@ -2,9 +2,9 @@ import { createComparison, defaultRules } from "../lib/filter.js";
 
 export function initFiltering(elements, indexes) {
 
-    Object.keys(indexes).forEach((elementName) => {
-        elements[elementName].append(
-            ...Object.values(indexes[elementName]).map(name => {
+    Object.keys(indexes).forEach((key) => {
+        elements[key].append(
+            ...Object.values(indexes[key]).map(name => {
                 const option = document.createElement('option');
                 option.value = name;
                 option.textContent = name;
@@ -26,6 +26,6 @@ export function initFiltering(elements, indexes) {
 
         const compare = createComparison(defaultRules);
 
-        return data.filter(row => compare(row, state));
+        return data.filter(row => row && compare(row, state));
     };
 }
