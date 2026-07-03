@@ -112,3 +112,9 @@ export function getPages(currentPage, maxPage, limit) {
 
     return pages;
 }
+
+export function createComparison(rules) {
+    return (row, state) => {
+        return rules.every(rule => rule(row, state))
+    }
+}

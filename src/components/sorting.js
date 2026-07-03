@@ -2,7 +2,6 @@ import { sortCollection, sortMap } from "../lib/sort.js";
 
 export function initSorting(columns) {
     return (data, state, action) => {
-
         let field = null;
         let order = null;
 
@@ -19,17 +18,12 @@ export function initSorting(columns) {
             });
 
         } else {
-
             columns.forEach(column => {
                 if (column.dataset.value !== 'none') {
                     field = column.dataset.field;
                     order = column.dataset.value;
                 }
             });
-        }
-
-        if (!field || !order || order === 'none') {
-            return data;
         }
 
         return sortCollection(data, field, order);

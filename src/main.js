@@ -7,31 +7,57 @@ import { initData } from "./data.js";
 import { processFormData } from "./lib/utils.js";
 
 import { initTable } from "./components/table.js";
-import { initPagination } from "./components/pagination.js";
 import { initSorting } from "./components/sorting.js";
 import { initFiltering } from "./components/filtering.js";
 import { initSearching } from "./components/searching.js";
+import { initPagination } from "./components/pagination.js";
 
-// ---------------- DATA ----------------
 const { data, ...indexes } = initData(sourceData);
 
-// ---------------- STATE ----------------
+const sampleTable = initTable({
+    tableTemplate: 'table',
+    rowTemplate: 'row',
+    before: ['header', 'search', 'filter'],
+    after: ['pagination']
+}, render);
+
+const applySorting = initSorting([
+    sampleTable.header.elements.sortByDate,
+    sampleTable.header.elements.sortByTotal
+]);
+
+const applyFiltering = initFiltering(sampleTable.filter.elements, indexes);
+
+const applySearching = initSearching('search');
+
+const applyPagination = initPagination(
+    sampleTable.pagination.elements,
+    (el, page, isCurrent) => {
+        el.querySelector('input').value = page;
+        el.querySelector('input').checked = isCurrent;
+        el.querySelector('span').textContent = page;
+        return el;
+    }
+);
+
 function collectState() {
     const state = processFormData(new FormData(sampleTable.container));
 
+    const rowsPerPage = parseInt(state.rowsPerPage);
+    const page = parseInt(state.page ?? 1);
+
     return {
         ...state,
-        rowsPerPage: parseInt(state.rowsPerPage ?? 10),
-        page: parseInt(state.page ?? 1) || 1
+        rowsPerPage,
+        page
     };
 }
 
-// ---------------- PIPELINE ----------------
 function render(action) {
-    const state = collectState();
+    let state = collectState();
     let result = [...data];
 
-    result = applySearching(result, state, action);
+    result = applySearching(result, state);
     result = applyFiltering(result, state, action);
     result = applySorting(result, state, action);
     result = applyPagination(result, state, action);
@@ -39,51 +65,7 @@ function render(action) {
     sampleTable.render(result);
 }
 
-// ---------------- TABLE ----------------
-const sampleTable = initTable({
-    tableTemplate: 'table',
-    rowTemplate: 'row',
-    before: ['search', 'header', 'filter'],
-    after: ['pagination']
-}, render);
-
-// ---------------- MODULES ----------------
-
-// SEARCH
-const applySearching = initSearching('search');
-
-// SORT
-const applySorting = initSorting([
-    sampleTable.header.elements.sortByDate,
-    sampleTable.header.elements.sortByTotal
-]);
-
-// FILTER
-const applyFiltering = initFiltering(
-    sampleTable.filter.elements,
-    {
-        searchBySeller: indexes.sellers
-    }
-);
-
-// PAGINATION
-const applyPagination = initPagination(
-    sampleTable.pagination.elements,
-    (el, page, isCurrent) => {
-        const input = el.querySelector('input');
-        const label = el.querySelector('span');
-
-        input.value = page;
-        input.checked = isCurrent;
-        label.textContent = page;
-
-        return el;
-    }
-);
-
-// ---------------- MOUNT ----------------
 const appRoot = document.querySelector('#app');
 appRoot.appendChild(sampleTable.container);
 
-// initial render
 render();
