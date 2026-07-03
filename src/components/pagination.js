@@ -16,15 +16,12 @@ export const initPagination = ({ pages, fromRow, toRow, totalRows }, createPage)
                 case 'prev':
                     page = Math.max(1, page - 1);
                     break;
-
                 case 'next':
                     page = Math.min(pageCount, page + 1);
                     break;
-
                 case 'first':
                     page = 1;
                     break;
-
                 case 'last':
                     page = pageCount;
                     break;
@@ -48,4 +45,4 @@ export const initPagination = ({ pages, fromRow, toRow, totalRows }, createPage)
 
         return data.slice(skip, skip + rowsPerPage);
     };
-}
+};
