@@ -8,6 +8,7 @@ import { processFormData } from "./lib/utils.js";
 
 import { initTable } from "./components/table.js";
 import { initPagination } from "./components/pagination.js";
+import { initSorting } from "./components/sorting.js";
 
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
@@ -34,9 +35,13 @@ function collectState() {
  * @param {HTMLButtonElement?} action
  */
 function render(action) {
-    let state = collectState();
+    const state = collectState();
     let result = [...data];
 
+    // Сортировка
+    result = applySorting(result, state, action);
+
+    // Пагинация
     result = applyPagination(result, state, action);
 
     sampleTable.render(result);
@@ -45,10 +50,17 @@ function render(action) {
 const sampleTable = initTable({
     tableTemplate: 'table',
     rowTemplate: 'row',
-    before: [],
+    before: ['header'],
     after: ['pagination']
 }, render);
 
+// Инициализация сортировки
+const applySorting = initSorting([
+    sampleTable.header.elements.sortByDate,
+    sampleTable.header.elements.sortByTotal
+]);
+
+// Инициализация пагинации
 const applyPagination = initPagination(
     sampleTable.pagination.elements,
     (el, page, isCurrent) => {
