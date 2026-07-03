@@ -2,7 +2,6 @@ import { createComparison, defaultRules } from "../lib/filter.js";
 
 export function initFiltering(elements, indexes) {
 
-    // Заполняем select
     Object.keys(indexes).forEach((elementName) => {
         elements[elementName].append(
             ...Object.values(indexes[elementName]).map(name => {
@@ -16,7 +15,6 @@ export function initFiltering(elements, indexes) {
 
     return (data, state, action) => {
 
-        // Очистка поля
         if (action && action.name === 'clear') {
             const input = action.parentElement.querySelector('input');
 
@@ -26,10 +24,8 @@ export function initFiltering(elements, indexes) {
             }
         }
 
-        // Создаем функцию сравнения
         const compare = createComparison(defaultRules);
 
-        // Фильтрация данных
         return data.filter(row => compare(row, state));
     };
 }
