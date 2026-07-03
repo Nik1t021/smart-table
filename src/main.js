@@ -12,8 +12,10 @@ import { initSorting } from "./components/sorting.js";
 import { initFiltering } from "./components/filtering.js";
 import { initSearching } from "./components/searching.js";
 
+// ---------------- DATA ----------------
 const { data, ...indexes } = initData(sourceData);
 
+// ---------------- STATE ----------------
 function collectState() {
     const state = processFormData(new FormData(sampleTable.container));
 
@@ -24,6 +26,7 @@ function collectState() {
     };
 }
 
+// ---------------- PIPELINE ----------------
 function render(action) {
     const state = collectState();
     let result = [...data];
@@ -36,6 +39,7 @@ function render(action) {
     sampleTable.render(result);
 }
 
+// ---------------- TABLE ----------------
 const sampleTable = initTable({
     tableTemplate: 'table',
     rowTemplate: 'row',
@@ -43,16 +47,18 @@ const sampleTable = initTable({
     after: ['pagination']
 }, render);
 
+// ---------------- MODULES ----------------
+
 // SEARCH
 const applySearching = initSearching('search');
 
-// SORTING
+// SORT
 const applySorting = initSorting([
     sampleTable.header.elements.sortByDate,
     sampleTable.header.elements.sortByTotal
 ]);
 
-// FILTERING
+// FILTER
 const applyFiltering = initFiltering(
     sampleTable.filter.elements,
     {
@@ -75,7 +81,9 @@ const applyPagination = initPagination(
     }
 );
 
-document.querySelector('#app')
-    .appendChild(sampleTable.container);
+// ---------------- MOUNT ----------------
+const appRoot = document.querySelector('#app');
+appRoot.appendChild(sampleTable.container);
 
+// initial render
 render();
