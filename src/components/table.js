@@ -5,6 +5,28 @@ export function initTable(settings, onAction) {
 
     const root = cloneTemplate(tableTemplate);
 
+    // attach templates before
+    before.reverse().forEach(name => {
+        root[name] = cloneTemplate(name);
+        root.container.prepend(root[name].container);
+    });
+
+    // attach templates after
+    after.forEach(name => {
+        root[name] = cloneTemplate(name);
+        root.container.append(root[name].container);
+    });
+
+    root.container.addEventListener('submit', e => {
+        e.preventDefault();
+        onAction(e.submitter);
+    });
+
+    root.container.addEventListener('change', () => onAction());
+    root.container.addEventListener('reset', () => {
+        setTimeout(() => onAction());
+    });
+
     const render = (data) => {
         const nextRows = data.map(item => {
             const row = cloneTemplate(rowTemplate);
@@ -20,29 +42,6 @@ export function initTable(settings, onAction) {
 
         root.elements.rows.replaceChildren(...nextRows);
     };
-
-    // BEFORE templates
-    before.forEach(name => {
-        root[name] = cloneTemplate(name);
-        root.container.prepend(root[name].container);
-    });
-
-    // AFTER templates
-    after.forEach(name => {
-        root[name] = cloneTemplate(name);
-        root.container.append(root[name].container);
-    });
-
-    // EVENTS
-    root.container.addEventListener('change', () => onAction());
-    root.container.addEventListener('reset', () => {
-        setTimeout(() => onAction(), 0);
-    });
-
-    root.container.addEventListener('submit', (e) => {
-        e.preventDefault();
-        onAction(e.submitter);
-    });
 
     return { ...root, render };
 }

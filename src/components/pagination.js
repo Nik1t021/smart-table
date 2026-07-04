@@ -1,31 +1,30 @@
 import { getPages } from "../lib/utils.js";
 
-export const initPagination = ({ pages, fromRow, toRow, totalRows }, createPage) => {
+export function initPagination({ pages, fromRow, toRow, totalRows }, createPage) {
+
+    const pageTemplate = pages.firstElementChild.cloneNode(true);
+    pages.firstElementChild.remove();
+
     return (data, state, action) => {
 
         const rowsPerPage = state.rowsPerPage;
         const pageCount = Math.ceil(data.length / rowsPerPage);
         let page = state.page;
 
-        if (action) {
-            switch (action.name) {
-                case 'prev': page = Math.max(1, page - 1); break;
-                case 'next': page = Math.min(pageCount, page + 1); break;
-                case 'first': page = 1; break;
-                case 'last': page = pageCount; break;
-            }
+        if (action) switch (action.name) {
+            case 'prev': page = Math.max(1, page - 1); break;
+            case 'next': page = Math.min(pageCount, page + 1); break;
+            case 'first': page = 1; break;
+            case 'last': page = pageCount; break;
         }
 
         const skip = (page - 1) * rowsPerPage;
 
         const visiblePages = getPages(page, pageCount, 5);
 
-        const template = pages.firstElementChild.cloneNode(true);
-        pages.firstElementChild.remove();
-
-        pages.replaceChildren(...visiblePages.map(num => {
-            const el = template.cloneNode(true);
-            return createPage(el, num, num === page);
+        pages.replaceChildren(...visiblePages.map(pageNumber => {
+            const el = pageTemplate.cloneNode(true);
+            return createPage(el, pageNumber, pageNumber === page);
         }));
 
         fromRow.textContent = skip + 1;
@@ -34,4 +33,4 @@ export const initPagination = ({ pages, fromRow, toRow, totalRows }, createPage)
 
         return data.slice(skip, skip + rowsPerPage);
     };
-};
+}
