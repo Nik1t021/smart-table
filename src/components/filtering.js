@@ -1,25 +1,119 @@
-import { createComparison, defaultRules } from "../lib/utils.js";
+export function initFiltering(elements) {
+    // Заполнение select после асинхронного
+    // получения справочников с сервера
+    const updateIndexes = (
+        targetElements,
+        indexes
+    ) => {
+        Object.keys(indexes).forEach(
+            (elementName) => {
+                const element =
+                    targetElements[elementName];
 
-export function initFiltering(elements, indexes) {
+                const values =
+                    indexes[elementName];
 
-    return (data, state, action) => {
+                if (!element || !values) {
+                    return;
+                }
 
-        const compare = createComparison(defaultRules);
+                // Сохраняем первую пустую option,
+                // удаляем старые динамические варианты
+                while (
+                    element.options.length > 1
+                ) {
+                    element.remove(1);
+                }
 
-        if (action && action.name === 'clear') {
-            const parent = action.closest('label');
-            const input = parent.querySelector('input');
+                const options =
+                    Object.values(values).map(
+                        (name) => {
+                            const option =
+                                document.createElement(
+                                    "option"
+                                );
 
-            input.value = '';
-            state[action.dataset.field] = '';
+                            option.textContent =
+                                name;
+
+                            option.value =
+                                name;
+
+                            return option;
+                        }
+                    );
+
+                element.append(...options);
+            }
+        );
+    };
+
+    const applyFiltering = (
+        query,
+        state,
+        action
+    ) => {
+        // Очистка отдельного текстового фильтра
+        if (
+            action &&
+            action.name === "clear"
+        ) {
+            const parent =
+                action.closest("label");
+
+            const input =
+                parent?.querySelector(
+                    "input, select"
+                );
+
+            if (input) {
+                input.value = "";
+
+                // В state ключи соответствуют name,
+                // а не data-name
+                state[input.name] = "";
+            }
         }
 
-        Object.keys(elements).forEach(key => {
-            if (elements[key].tagName === 'SELECT') {
-                elements[key].value = state[key] || '';
-            }
-        });
+        const filter = {};
 
-        return data.filter(row => compare(row, state));
+        Object.keys(elements).forEach(
+            (key) => {
+                const element =
+                    elements[key];
+
+                if (!element) {
+                    return;
+                }
+
+                const isFormControl =
+                    ["INPUT", "SELECT"].includes(
+                        element.tagName
+                    );
+
+                if (
+                    isFormControl &&
+                    element.name &&
+                    element.value
+                ) {
+                    filter[
+                        `filter[${element.name}]`
+                    ] = element.value;
+                }
+            }
+        );
+
+        return Object.keys(filter).length
+            ? Object.assign(
+                {},
+                query,
+                filter
+            )
+            : query;
+    };
+
+    return {
+        updateIndexes,
+        applyFiltering
     };
 }
