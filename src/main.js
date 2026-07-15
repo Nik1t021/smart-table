@@ -1,76 +1,165 @@
-import './style.css';
+import "./style.css";
 
-import { data as sourceData } from './data/dataset_1.js';
-import { initData } from './data.js';
+import { data as sourceData } from "./data/dataset_1.js";
+import { initData } from "./data.js";
 
-import { initTable } from './components/table.js';
-import { initSorting } from './components/sorting.js';
-import { initFiltering } from './components/filtering.js';
-import { initPagination } from './components/pagination.js';
-import { initSearching } from './components/searching.js';
+import { initTable } from "./components/table.js";
+import { initSorting } from "./components/sorting.js";
+import { initFiltering } from "./components/filtering.js";
+import { initPagination } from "./components/pagination.js";
+import { initSearching } from "./components/searching.js";
 
-const { data, ...indexes } = initData(sourceData);
+// ---------- API ----------
+
+// sourceData сохраняем в вызове, как в последовательности задания.
+// Серверная версия initData() его больше не использует.
+const api = initData(sourceData);
+
+// ---------- TABLE ----------
 
 const sampleTable = initTable(
     {
-        tableTemplate: 'table',
-        rowTemplate: 'row',
-        before: ['search', 'header', 'filter'],
-        after: ['pagination']
+        tableTemplate: "table",
+        rowTemplate: "row",
+        before: ["search", "header", "filter"],
+        after: ["pagination"]
     },
     render
 );
 
 // ---------- STATE ----------
+
 function collectState() {
     const formData = new FormData(sampleTable.container);
 
     return {
         ...Object.fromEntries(formData.entries()),
-        rowsPerPage: parseInt(formData.get('rowsPerPage')) || 10,
-        page: parseInt(formData.get('page')) || 1
+
+        rowsPerPage:
+            Number.parseInt(
+                formData.get("rowsPerPage"),
+                10
+            ) || 10,
+
+        page:
+            Number.parseInt(
+                formData.get("page"),
+                10
+            ) || 1
     };
 }
 
-// ---------- RENDER ----------
-function render(action) {
-    let state = collectState();
-    let result = [...data];
-
-    result = applySearching(result, state, action);
-    result = applyFiltering(result, state, action);
-    result = applySorting(result, state, action);
-    result = applyPagination(result, state, action);
-
-    sampleTable.render(result);
-}
-
 // ---------- MODULES ----------
+
+const applySearching = initSearching("search");
+
+const {
+    applyFiltering,
+    updateIndexes
+} = initFiltering(sampleTable.filter.elements);
+
 const applySorting = initSorting([
     sampleTable.header.elements.sortByDate,
     sampleTable.header.elements.sortByTotal
 ]);
 
-const applyFiltering = initFiltering(
-    sampleTable.filter.elements,
-    {
-        searchBySeller: indexes.sellers
-    }
-);
-
-const applyPagination = initPagination(
+const {
+    applyPagination,
+    updatePagination
+} = initPagination(
     sampleTable.pagination.elements,
-    (el, page, isCurrent) => {
-        el.querySelector('input').value = page;
-        el.querySelector('span').textContent = page;
-        el.querySelector('input').checked = isCurrent;
-        return el;
+
+    (element, page, isCurrent) => {
+        const input =
+            element.querySelector("input");
+
+        const label =
+            element.querySelector("span");
+
+        input.value = page;
+        input.checked = isCurrent;
+        label.textContent = page;
+
+        return element;
     }
 );
 
-const applySearching = initSearching('search');
+// ---------- RENDER ----------
+
+async function render(action) {
+    const state = collectState();
+
+    let query = {};
+
+    // Шаг 4 — поиск
+    query = applySearching(
+        query,
+        state,
+        action
+    );
+
+    // Шаг 3 — фильтрация
+    query = applyFiltering(
+        query,
+        state,
+        action
+    );
+
+    // Шаг 5 — сортировка
+    query = applySorting(
+        query,
+        state,
+        action
+    );
+
+    // Шаг 2 — пагинация
+    query = applyPagination(
+        query,
+        state,
+        action
+    );
+
+    try {
+        const {
+            total,
+            items
+        } = await api.getRecords(query);
+
+        updatePagination(total, query);
+
+        sampleTable.render(items);
+    } catch (error) {
+        console.error(
+            "Ошибка загрузки таблицы:",
+            error
+        );
+
+        sampleTable.render([]);
+    }
+}
 
 // ---------- INIT ----------
-document.querySelector('#app').appendChild(sampleTable.container);
 
-render();
+async function init() {
+    const indexes = await api.getIndexes();
+
+    updateIndexes(
+        sampleTable.filter.elements,
+        {
+            searchBySeller: indexes.sellers
+        }
+    );
+
+    document
+        .querySelector("#app")
+        .appendChild(sampleTable.container);
+}
+
+init()
+    .then(() => render())
+    .catch((error) => {
+        console.error(
+            "Ошибка инициализации:",
+            error
+        );
+    });
