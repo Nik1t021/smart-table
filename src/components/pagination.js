@@ -1,36 +1,130 @@
 import { getPages } from "../lib/utils.js";
 
-export function initPagination({ pages, fromRow, toRow, totalRows }, createPage) {
+export function initPagination(
+    {
+        pages,
+        fromRow,
+        toRow,
+        totalRows
+    },
+    createPage
+) {
+    const firstPageElement =
+        pages.firstElementChild;
 
-    const pageTemplate = pages.firstElementChild.cloneNode(true);
-    pages.firstElementChild.remove();
+    if (!firstPageElement) {
+        throw new Error(
+            "В шаблоне pagination отсутствует шаблон номера страницы"
+        );
+    }
 
-    return (data, state, action) => {
+    const pageTemplate =
+        firstPageElement.cloneNode(true);
 
-        const rowsPerPage = state.rowsPerPage;
-        const pageCount = Math.ceil(data.length / rowsPerPage);
+    firstPageElement.remove();
+
+    // Количество страниц последнего ответа сервера
+    let pageCount = 1;
+
+    const applyPagination = (
+        query,
+        state,
+        action
+    ) => {
+        const limit = state.rowsPerPage;
         let page = state.page;
 
-        if (action) switch (action.name) {
-            case 'prev': page = Math.max(1, page - 1); break;
-            case 'next': page = Math.min(pageCount, page + 1); break;
-            case 'first': page = 1; break;
-            case 'last': page = pageCount; break;
+        if (action) {
+            switch (action.name) {
+                case "prev":
+                    page = Math.max(
+                        1,
+                        page - 1
+                    );
+                    break;
+
+                case "next":
+                    page = Math.min(
+                        pageCount,
+                        page + 1
+                    );
+                    break;
+
+                case "first":
+                    page = 1;
+                    break;
+
+                case "last":
+                    page = pageCount;
+                    break;
+            }
         }
 
-        const skip = (page - 1) * rowsPerPage;
+        return Object.assign({}, query, {
+            limit,
+            page
+        });
+    };
 
-        const visiblePages = getPages(page, pageCount, 5);
+    const updatePagination = (
+        total,
+        { page, limit }
+    ) => {
+        pageCount = Math.max(
+            1,
+            Math.ceil(total / limit)
+        );
 
-        pages.replaceChildren(...visiblePages.map(pageNumber => {
-            const el = pageTemplate.cloneNode(true);
-            return createPage(el, pageNumber, pageNumber === page);
-        }));
+        // Защита на случай, если текущая страница
+        // стала больше доступного количества страниц
+        const currentPage = Math.min(
+            Math.max(1, page),
+            pageCount
+        );
 
-        fromRow.textContent = skip + 1;
-        toRow.textContent = Math.min(page * rowsPerPage, data.length);
-        totalRows.textContent = data.length;
+        const skip =
+            (currentPage - 1) * limit;
 
-        return data.slice(skip, skip + rowsPerPage);
+        const visiblePages = getPages(
+            currentPage,
+            pageCount,
+            5
+        );
+
+        pages.replaceChildren(
+            ...visiblePages.map(
+                (pageNumber) => {
+                    const element =
+                        pageTemplate.cloneNode(
+                            true
+                        );
+
+                    return createPage(
+                        element,
+                        pageNumber,
+                        pageNumber ===
+                            currentPage
+                    );
+                }
+            )
+        );
+
+        fromRow.textContent =
+            total > 0
+                ? skip + 1
+                : 0;
+
+        toRow.textContent =
+            Math.min(
+                currentPage * limit,
+                total
+            );
+
+        totalRows.textContent = total;
+    };
+
+    return {
+        applyPagination,
+        updatePagination
     };
 }
